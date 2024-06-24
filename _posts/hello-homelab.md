@@ -9,10 +9,9 @@ tags: [ctf, penetration testing]    # TAG names should always be lowercase
 
 Hello world welcoem to p ypage 
 
-* mlg
-* halo 3 
-* WoW
-
+* eggs
+* bacon
+* milk
 ```python
 print("Hello World!)
 ```
