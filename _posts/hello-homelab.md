@@ -1,17 +1,18 @@
 --- 
 title: Hello Homelab
 date: 2024-06-24 12:00:00 -500
-categories: [CTF]
-tags: [CTFm Penetration Testing]
+categories: [CTF, hardware]
+tags: [ctf, penetration testing]    # TAG names should always be lowercase
 ---
 
 # Hello
 
-```javascript
-console.log('Hello World!)
-```
+Hello world welcoem to p ypage 
 
-```yml
-```
+* mlg
+* halo 3 
+* WoW
 
-## HELLO WORLD
+```python
+print("Hello World!)
+```
