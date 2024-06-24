@@ -1,6 +1,6 @@
 --- 
 title: Hello Homelab
-date: 2024-05-24 12:00:00 -500
+date: 2001-05-24 12:00:00 -100
 categories: [CTF, hardware]
 tags: [ctf, penetration testing]    # TAG names should always be lowercase
 ---
