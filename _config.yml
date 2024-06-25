@@ -16,7 +16,7 @@ timezone: America/Chicago
 
 title: HomeLab Docs # Test Title
 
-tagline: A blog by CJ Oddo # it will display as the sub-title
+tagline: Jigsaw64's Blog # it will display as the sub-title
 
 description: >- # used by seo meta and the atom feed
   A Docs site for my homelabs & projects
@@ -34,7 +34,7 @@ twitter:
 social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
-  name: Christopher J Oddo (CJ)
+  name: Jigsaw64
   email: example@domain.com # change to your email address
   links:
     # The first element serves as the copyright owner's link
