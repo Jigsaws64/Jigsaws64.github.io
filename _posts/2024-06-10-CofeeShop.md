@@ -1,14 +1,16 @@
 --- 
-title: "Basic Web App Exploit [TCM-Security PEH Capstone]"
-description: "This exploit targets a straightforward web application vulnerability, utilizing basic techniques to potentially compromise the host device that runs the application."
+title: "Basic Web App Exploit"
+description: "Exploiting a web application with multiple vulnerabilities"
 date: 2024-06-25 12:00:00 -100
-image: /assets/images/Coffe Shop/PEH.png
+image: /assets/images/Coffe Shop/Cofee Shop Web App.png
 categories: [Vulnerability Assessment, Web Application]
 tags: [arbitrary file upload, burp suite, client-side validation, container, insufficient password security, pentest report, sql injection, sqlmap, xss]    # TAG names should always be lowercase
 ---
-Cover image by [Freepik](https://www.freepik.com/)
+*Cover image by [Freepik](https://www.freepik.com/)*
 
-Here we will leverage vulnerabilities in a poorly designed website. The web application resides in a container located on our local machine. As the title indicates, this is the capstone for TCM-Securities Practical Ethical Hacking course
+Here we will leverage vulnerabilities in a poorly designed website. The web application resides in a container located on our local machine. I'll include my vulnerability assessment report at the end
+
+## Initial Recon and Info Gathering
 
 Navigating to our localhost/capstone We see the following webpage
 
@@ -115,7 +117,7 @@ We can see from the output that the hash obained from Jeremy `$2y$10$F9bvqz5eoaw
 ![Jeremy's Password](/assets/images/Coffe%20Shop/Hash%20revealed%20password.png)
 
 
-# Utilizing SQLMap
+## Utilizing SQLMap
 
 [SQLmap](https://sqlmap.org/) is an open-source penetration testing tool that automates the process of detecting and exploiting SQL injection vulnerabilities in web applications.
 
@@ -161,11 +163,13 @@ It looks like we have the ability to upload. Let's see what happens when we uplo
 
 ![MLG Coffee](/assets/images/Coffe%20Shop/MLG%20Coffee.png)
 
-It looks like we can successfully upload. We'll use the inspector in the browser to view the image source
+The upload was successful. We'll use the inspector in the browser to view the image source
 
 ![Image source](/assets/images/Coffe%20Shop/image%20location.png)
 
 Looks like the image source is `assets/<assetnumber>` From here we will edit the request in Brupsuite to include a php command injection one liner
+
+## Gaining shell access
 
 ![File named changed](/assets/images/Coffe%20Shop/File%20name%20changed.png)
 
@@ -202,6 +206,6 @@ http://localhost/capstone/assets/21.php?cmd=/bin/bash%20-c%20%27bash%20-i%20%3E%
 
 And GG, we have successfully compromised this container. It's crucial to avoid security vulnerabilities like XSS, SQLi, & client-side validation. My full vulnerability report with recommended mitigations can be found below
 
-# Vulnerability Assessment Report
+## Vulnerability Assessment Report
 
 <iframe src="/assets/images/Coffe Shop/Coffee Corp - Web Application Vulnerability Assessment .pdf#toolbar=0" width="100%" height="600px"></iframe>
