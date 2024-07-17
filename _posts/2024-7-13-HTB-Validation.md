@@ -2,7 +2,7 @@
 title: "Hack the Box (HTB) - Validation"
 description: "Exploiting asdfasdf"
 date: 2024-07-13 12:00:00 -100
-image: /assets/images/HTB - Validation/Validation final.png
+image: /assets/images/HTB - Validation/Validation_Thumbnail.png
 categories: [CTF]
 tags: [grpc, sql injection,port forwarding, ssh, privilege escalation,]    # TAG names should always be lowercase
 ---
@@ -21,7 +21,7 @@ Looking at the results, we see the following ports open
 - 80 (HTTP)
 - 4566 (HTTP)
 - 8080 (HTTP)
-- Various filtered 
+- Various filtered
 
 ![Nmap Scan](/assets/images/HTB%20-%20Validation/Nmap%20scan_validated.png)
 
