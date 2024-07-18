@@ -25,7 +25,7 @@ Looking at the results, we see the following ports open
 
 ![Nmap Scan](assets/images/HTB - Validation Pics/Nmap scan_validated.png)
 
-We'll start with the log hanging fruit of this scan and check out the apache web server hosted on port 80
+We'll start with the low hanging fruit of this scan and check out the apache web server hosted on port 80
 
 ![Web page](/assets/images/HTB - Validation Pics/Web page.png)
 
@@ -55,4 +55,10 @@ on line 33`
 
 Our backtick ` character caused a SQL error due to incorrect error handling of the SQL statement
 
-![Static Cookie](/assets/images/HTB%20-%20Validation%20Pics/Static%20Cookie.png)
+Let's try commenting out the rest of the statement with `-- -`
+
+![No SQL error](/assets/images/HTB%20-%20Validation%20Pics/No%20SQL%20error.png)
+
+The error went away once we commented out the rest of the query. This confirms that we have SQLi
+
+Let's
