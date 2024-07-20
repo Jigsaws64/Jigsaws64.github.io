@@ -4,20 +4,20 @@ description: "Exploiting a web application with multiple vulnerabilities"
 date: 2024-06-25 12:00:00 -100
 image: /assets/images/Coffe Shop/Cofee Shop Web App.png
 categories: [Vulnerability Assessment, Web Application]
-tags: [arbitrary file upload, burp suite, client-side validation, container, insufficient password security, pentest report, sql injection, sqlmap, xss]    # TAG names should always be lowercase
+tags: [arbitrary file upload, burp suite, client-side validation, docker, insufficient password security,sql injection, sqlmap, xss]    # TAG names should always be lowercase
 ---
 *Cover image by [Freepik](https://www.freepik.com/)*
 
-Here we will leverage vulnerabilities in a poorly designed website. The web application resides in a container located on our local machine. I'll include my vulnerability assessment report at the end
+Here we will leverage vulnerabilities in a poorly designed website. The web application resides in a  docker container located on our local machine. The vulnerability assessment report will be included at the end
 
 ## Initial Recon and Info Gathering
 
 Navigating to our localhost/capstone We see the following webpage
 
 ![Image of the website](/assets/images/Coffe%20Shop/Website%20Pic.png)
-_Coffee store application_
+_Coffee store homepage_
 
-Clicking on one of the available items listed allows us to enter a comment. Let's try a basic XSS test to test of the application will run arbitrary java script
+Clicking on one of the available items listed allows us to enter a comment. Let's try a basic XSS test to test if the application will run arbitrary java script commands
 
 ```javascript
 <script>alert(1)</script>
@@ -25,11 +25,9 @@ Clicking on one of the available items listed allows us to enter a comment. Let'
 
 ![XSS](/assets/images/Coffe%20Shop/Coffe%20XSS%20example.png)
 
-Great, our first finding is this XSS vulnerability. The URL is also vulnerable to XSS attacks as it directly reflects what's in the URL
+Great, our first finding is this XSS vulnerability. The URL is also vulnerable to XSS attacks as it directly reflects text back to us
 
 ![XSS2](/assets/images/Coffe%20Shop/URL%20Reflected%20back%20at%20us.png)
-
-{% include tip.html content="Input sanitization & encoding user input can help prevent this types of attacks." %}
 
 This web application must store data in a database. Let's attempt to manipulate the URL with a simple [SQL](https://aws.amazon.com/what-is/sql/) injection statement
 
@@ -43,21 +41,21 @@ Since 1=1 equates to true, it allows us to retrieve all the available items. The
 
 ![Simple SQL exploit](/assets/images/Coffe%20Shop/XSS%20Injection%202.png)
 
-Great, so with this POC working, we can try to extract the number of columns we're dealing with. Glancing at the image below, there's probably `7` columns
+With this working, we can try to extract the number of columns we're querying as this will be important later. Glancing at the image below, there's probably `7` columns
 
 ![Number of Columns](/assets/images/Coffe%20Shop/Number%20of%20columns.png)
 
-We can extract the number of columns using the following line
+We can confirm the number of columns using the following line
 
-```sql
+```SQL
 coffee=1' union select null,null,null,null,null,null,null-- -
 ```
 
-Since the page still loads, it indicates that we have confirmed there is indeed 7 columns and can further exploit the database
-
 ![Confirmed columns](/assets/images/Coffe%20Shop/Confirmed%20number%20of%20columns.png)
 
-After enumerating the number of columns, we need to know what the actual table names are. I opted to just replace `null` with `TABLE_NAME` for every column placeholder
+Since the page still loads, it confirms we have 7 columns and can further exploit the database. Union select statements combine the results of two or more `SELECT` statements into a single result. The union select **MUST MATCH** the number of columns 
+
+After enumerating the number of columns, we need to know what the actual table names are. We'll use the following command
 
 ```SQL
 1' union select TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME,TABLE_NAME FROM INFORMATION_SCHEMA.TABLES-- -
@@ -65,7 +63,8 @@ After enumerating the number of columns, we need to know what the actual table n
 
 `INFORMATION_SCHEMA.TABLES` contains information about all the tables in the database
 
-All the tables are dumped 
+All the tables are dumped
+
 ![Dumped Tables](/assets/images/Coffe%20Shop/Table_names.png)
 
 Scrolling down, we see the non standard SQL tables that are probably related to this application
@@ -78,11 +77,11 @@ Let's enumerate the columns as well
 coffee=1'union select COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS-- -
 ```
 
-Critical column names acquired 👌
+Important column names acquired 👌
 
 ![Password](/assets/images/Coffe%20Shop/Password.png)
 
-Let's use the information from our tables and columns to extract the password from the users table
+Let's use the information from our table / column names to extract the password from the users table
 
 ```SQL
 coffee=1' union select null,username,password,null,null,null,null FROM users-- -
@@ -90,7 +89,7 @@ coffee=1' union select null,username,password,null,null,null,null FROM users-- -
 
 ![password obtained](/assets/images/Coffe%20Shop/Password%20Hashes.png)
 
-Password hashes obtained. Now we need to identify the hash algorithm used to crack them
+Password hashes obtained. Now we need to identify the hash algorithm used in order to crack them
 
 It looks like both my offline hash cracking tools `hash-identifier` and `hashid` could not identify the hash
 
@@ -117,7 +116,7 @@ We can see from the output that the hash obained from Jeremy `$2y$10$F9bvqz5eoaw
 ![Jeremy's Password](/assets/images/Coffe%20Shop/Hash%20revealed%20password.png)
 
 
-## Utilizing SQLMap
+### Utilizing SQLMap
 
 [SQLmap](https://sqlmap.org/) is an open-source penetration testing tool that automates the process of detecting and exploiting SQL injection vulnerabilities in web applications.
 

