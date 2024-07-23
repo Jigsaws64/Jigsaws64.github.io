@@ -15,7 +15,7 @@ Let's start by running a [AutoRecon](https://github.com/Tib3rius/AutoRecon) agai
 sudo autorecon 10.10.10.56
 ```
 
-Check out full TCP scan of the machine, we see the following ports open:
+Checking the full TCP scan of the machine, we see the following ports open:
 
 | Port     | State | Service | Reason           | Version                                |
 |----------|-------|---------|------------------|----------------------------------------|
