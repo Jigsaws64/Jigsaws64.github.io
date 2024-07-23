@@ -129,7 +129,7 @@ GG, we've obtained root on this box
 5. Discoverd config.php file with credentials
 6. Used credentails from config.php to root machine
 
-## Vulnerabilities & Mitigation Summary
+## Vulnerabilities & Mitigation
 
 | Vulnerability     | Mitigation            |
 |-------------------|-----------------------|
