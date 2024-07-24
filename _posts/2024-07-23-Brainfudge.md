@@ -2,7 +2,7 @@
 title: "Hack the Box (HTB) - Brainf*#k"
 description: "Exploiting Shellshock"
 date: 2024-07-20 12:00:00 -100
-image: /assets/images/HTB - Shocker/HTB - Shocker Thumbnail.png
+image: /assets/images/HTB - Brainfuck/HTB BrainF#K.jpg
 categories: [CTF]
 tags: [shellshock,web application]    # TAG names should always be lowercase
 ---
