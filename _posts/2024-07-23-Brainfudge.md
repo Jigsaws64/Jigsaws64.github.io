@@ -230,7 +230,7 @@ ssh -i id_rsa orestis@10.10.10.17
 Enter our passkey of `3poulakia!` and wee're in!
 
 ![SSH User Access](/assets/images/HTB%20-%20Brainfuck/SSH%20BrainFuck.png)
-<p align="center"><em>SSH Access</em>
+<p align="center"><em>SSH Access</em></p>
 
 ## Escalation
 
@@ -239,7 +239,7 @@ Now is the fun part, escalating. Running sudo -l is useless as we don't have ore
 Let's take a look around and see what we can find
 
 ![Sage Script](/assets/images/HTB%20-%20Brainfuck/Sage%20Script.png)
-<p align="center"><em>Sage Script</em>
+<p align="center"><em>Sage Script</em></p>
 
 Immediately checking our user directory, I notice this `encrypt.sage` file that's owned my us (orestis)
 
