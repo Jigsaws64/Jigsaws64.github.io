@@ -1,6 +1,6 @@
 --- 
 title: "Hack the Box (HTB) - Shocker"
-description: "Exploiting Shellshock"
+description: "Exploiting Shellshock & escalating with poor sudo permissions"
 date: 2024-07-20 12:00:00 -100
 image: /assets/images/HTB - Shocker/HTB - Shocker Thumbnail.png
 categories: [CTF]

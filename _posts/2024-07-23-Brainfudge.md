@@ -1,10 +1,10 @@
 --- 
 title: "Hack the Box (HTB) - Brainf*#k"
-description: "Exploiting WP / RSA"
+description: "Exploiting a WordPress plugin, breaching an SMTP server, and decrypting an RSA private key"
 date: 2024-07-23 12:00:00 -100
 image: /assets/images/HTB - Brainfuck/HTB BrainF.png
 categories: [CTF]
-tags: [wordpress,]    # TAG names should always be lowercase
+tags: [wordpress, RSA encryption, Vigenère cipher,SMTP,IMAP]    # TAG names should always be lowercase
 ---
 
 ## Enumeration
