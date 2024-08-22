@@ -1,10 +1,10 @@
 --- 
 title: "Hack the Box (HTB) - Armageddon"
-description: "??"
+description: "Drupal exploit & Snap SUID"
 date: 2024-08-18 12:00:00 -100
 image: /assets/images/HTB - Armageddon/Armageddon Thumbnail.jpg
 categories: [CTF]
-tags: [drupal, suid, snap ]    # TAG names should always be lowercase
+tags: [drupal, suid, snap,snapd]    # TAG names should always be lowercase
 ---
 
 ## Enumeration
@@ -30,13 +30,23 @@ Googling exploits for Drupal 7 leads us to the following [exploit DB](https://ww
 
 ![Drupal Exploit](/assets/images/HTB%20-%20Armageddon/Exploit%20DB%20Armageddon.png)
 
+This script takes advantage of [CVE-2018-7600](https://nvd.nist.gov/vuln/detail/cve-2018-7600) in which Drupal before 7.58, 8.x before 8.3.9, 8.4.x before 8.4.6, and 8.5.x before 8.5.1 allow remote attackers to execute arbitrary code.
+
 We can find ths `drupalgeddon` exploit in Metasploit
 
 ```bash
 msfdb
 ```
 
-Serching for `drupalgeddon` shows us the following
+### Explaining the form vulnerability further
+
+This module we're about to use in MSF is called `drupal_drupalgeddon2` and it exploits a vulnerability in Drupal's Forms API which allows attackers to inject arbitrary PHP code. The Forms API does not validate input and is the cause for the exploit
+
+![Forms.inc](/assets/images/HTB%20-%20Armageddon/Forms%20inc.png)
+
+This is the file that contains the API functionality
+
+Searching for `drupalgeddon` in MSF shows us the following
 
 ![MSF Drupal](/assets/images/HTB%20-%20Armageddon/MSF%20Drupal.png)
 
@@ -221,3 +231,17 @@ snap version
 ![Brute Force SSH](/assets/images/HTB%20-%20Armageddon/Brute%20force%20SSH.png)
 
 We could have simply brute forced SSH here as well to get the password
+
+## Vulnerabilities & Mitigations
+
+## Vulnerabilities & Mitigations
+
+| **Vulnerability**                                | **Mitigation**                                                                                     |
+|--------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| **Drupalgeddon 2 (CVE-2018-7600)**               | Update Drupal to a patched version. For Drupal 7.x, upgrade to 7.58 or later. For Drupal 8.x, upgrade to 8.5.1 or later. Apply security patches provided by Drupal. |
+| **Snap Package Privilege Escalation**            | Ensure snapd is updated to the latest version. For CVE-2019-7304, ensure snapd version is 2.37.1 or higher. Regularly review and update package management tools. |
+
+### Remediation References
+
+- [Drupal Security Advisories](https://www.drupal.org/security)
+- [Snapd Security Updates](https://snapcraft.io/docs/security-updates)
