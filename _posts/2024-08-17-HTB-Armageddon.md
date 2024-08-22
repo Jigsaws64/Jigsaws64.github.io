@@ -100,7 +100,7 @@ This syntax shows somewhat garbled, but readable output. I will put this in a ne
 
 - Username: brucetherealadmin
 - Password (hashed): $$$DgL2gjv6ZtxBo6CdqZEyJuBphBmrCqIV6W97.o0Suf1xAhaadURt
-- Email: admin@armageddon.eu
+- Email: <admin@armageddon.eu>
 
 In order to check this with hashcat we need to know the mode.
 
@@ -128,8 +128,6 @@ ssh brucetherealadmin@10.10.10.233
 
 Now that we have user on this system, let's so some foothold enumeration
 
-
-
  **Category**                      | **Command**                                      | **Result**                                       |
 |-----------------------------------|--------------------------------------------------|--------------------------------------------------|
 | **Current User & Group Perms (ID)** | `id`                                            | uid=1000(brucetherealadmin) gid=1000(brucetherealadmin) groups=1000(brucetherealadmin) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 |
@@ -144,13 +142,12 @@ As always, let's go for the low hanging fruit first. We are allowed to run `/usr
 
 Snap is a package management system that's similar to docker, and "snaps" are basically self contained software packages that include all the dependencies needed to run the app
 
-
 Checking GTFO bins for snap we see the following
 ![GTFO Snap](/assets/images/HTB%20-%20Armageddon/Snap%20GTFO.png)
 
 When we create a snap package, you can include hooks (scripts that execute during the lifecycle of a snap package) that run specific commands during installation. These hooks will execute with root privileges since we can run it with sudo
 
-GTFO bins provides us with the syntax to generate a malicious snap. 
+GTFO bins provides us with the syntax to generate a malicious snap.
 
 We'll also need the [FPM](https://github.com/jordansissel/fpm) to package this into a snap package
 
@@ -161,7 +158,6 @@ ssh-keygen -t rsa -b 4096 -f /tmp/my_key
 ```
 
 ![Public Key](/assets/images/HTB%20-%20Armageddon/SSH%20Public%20Key.png)
-
 
 ```bash
 # We have to edit the COMMAND part from GTFO bins to add our public key
@@ -216,7 +212,6 @@ And it's patched, lol
 
 ![Patched](/assets/images/HTB%20-%20Armageddon/Patched.png)
 
-
 We can check if our system is vulnerable by running `snap version`. If it's lower than 2.37.1 we can exploit this
 
 ```bash
@@ -232,9 +227,7 @@ snap version
 
 We could have simply brute forced SSH here as well to get the password
 
-## Vulnerabilities & Mitigations
-
-## Vulnerabilities & Mitigations
+## Vulnerabilities & Mitigation's
 
 | **Vulnerability**                                | **Mitigation**                                                                                     |
 |--------------------------------------------------|----------------------------------------------------------------------------------------------------|
