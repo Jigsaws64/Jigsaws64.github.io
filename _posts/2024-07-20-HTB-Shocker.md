@@ -1,4 +1,4 @@
---- 
+ --- 
 title: "Hack the Box (HTB) - Shocker"
 description: "Exploiting Shellshock & escalating with poor sudo permissions"
 date: 2024-07-20 12:00:00 -100

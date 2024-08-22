@@ -1,7 +1,7 @@
 --- 
 title: "Hack the Box (HTB) - Headless"
 description: "Stored XSS, Cookie Theft, & Path Injection"
-date: 2024-08-13 12:00:00 -100
+date: 2024-08-15 12:00:00 -100
 image: /assets/images/HTB - Headless/Headless HTB.jpg
 categories: [CTF]
 tags: [xss, cookie manipulation, command injection, path injection ]    # TAG names should always be lowercase
