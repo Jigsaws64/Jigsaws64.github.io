@@ -1,6 +1,6 @@
 --- 
 title: "Hack the Box (HTB) - Armageddon"
-description: "Drupal exploit & Snap SUID"
+description: "Drupal 7 CVE & Snap SUDO exploit"
 date: 2024-08-18 12:00:00 -100
 image: /assets/images/HTB - Armageddon/Armageddon Thumbnail.jpg
 categories: [CTF]
