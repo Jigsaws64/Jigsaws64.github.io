@@ -23,7 +23,9 @@ Checking the full TCP scan of the machine, we see the following ports open:
 | 80/tcp   | open  | http    | syn-ack ttl 63   | Apache httpd 2.4.18 ((Ubuntu))        |
 | 2222/tcp | open  | ssh     | syn-ack ttl 63   | OpenSSH 7.2p2 Ubuntu 4ubuntu2.2        |
 
-SSH is on a non standard port, but is irrelevant. Let's check out the apache web server running on port 80
+This version of SSH `7.2p2` has the vulnerability [CVE-2016-6210](https://nvd.nist.gov/vuln/detail/cve-2016-6210). Exploiting this allows for username enumeration. When a large password is sent during authentication, the time difference can be measured to determine valid usernames. However, the `4ubuntu2.2` suffix added by Ubuntu indicates that it made modifications to the base OpenSSH software. This is likely to avoid unintended roots on the box as this is not the attack vector
+
+Let's check out the apache web server running on port 80
 
 ![Apache web server](/assets/images/HTB%20-%20Shocker/Apache%20web%20server.png)
 
@@ -55,7 +57,22 @@ curl http://10.10.10.56/cgi-bin/user.sh
 
 ![Curl Request](/assets/images/HTB%20-%20Shocker/Curl%20Request.png)
 
-I got stuck here, apparently this directory is vulnerable to an exploit called [Shellshock](https://beaglesecurity.com/blog/vulnerability/shellshock-bash-bug.html#:~:text=Shellshock%2C%20also%20known%20as%20the,to%20a%20Bash%2Dbased%20application.). It's a vulnerability in old versions of Bash that lets attackers send HTTP requests that manipulate variables due to the improper handling of environment variable function
+I got stuck here, apparently this directory is vulnerable to an exploit called [Shellshock](https://beaglesecurity.com/blog/vulnerability/shellshock-bash-bug.html#:~:text=Shellshock%2C%20also%20known%20as%20the,to%20a%20Bash%2Dbased%20application.). It's a vulnerability in old versions of Bash that was discovered in 2014 that lets attackers execute arbitrary commands on a system by exploiting how bash handles environment variables
+
+Variables that are outside of a script affect the behavior of the system. ( `PATH` variable specifies directories where executable file are located )
+
+In bash, functions can be defined to preform tasks.
+
+- function_name() { commands; }
+
+In this exploit, an attacker can inject a function definition into an environment variable and due to bash's improper handling of function definitions in environment variables it will execute the commands after the function definition
+
+```bash
+# Example pyaload
+ () { :;}; echo vulnerable
+```
+
+The above code defines an empty function. The `:;` part is a no operation, effectively making the function do nothing & `echo vulnerable` is a command that will be executaed after the function definition due to the shellshock vulnerability
 
 We can run a specific nmap scan against this to ascertain if the target is vulnerable
 
@@ -65,7 +82,9 @@ nmap -sV -p80 --script http-shellshock --script-args uri=/cgi-bin/user.sh,cmd=ls
 
 ![Shocker Nmap](/assets/images/HTB%20-%20Shocker/Shocker%20nmap.png)
 
-Our nmap scans confirms the target is vulernable to [CVE-2014-6271](https://nvd.nist.gov/vuln/detail/cve-2014-6271) I.E Shellshock
+Our nmap scans confirms the target is vulnerable to [CVE-2014-6271](https://nvd.nist.gov/vuln/detail/cve-2014-6271) I.E Shellshock
+
+
 
 ### Exploiting without Metasploit ?
 
@@ -74,7 +93,7 @@ There's a metasploit module that gets us user level access with the click of a b
 We will use the following curl to make a malicious HTTP request with a specially crafted User-Agent header
 
 ```bash
-url -H "User-Agent: () { :;}; echo; /bin/bash -c 'whoami'"
+curl -H "User-Agent: () { :;}; echo; /bin/bash -c 'whoami'"
 ```
 
 - `() { :;}:` Defines a function in the User-Agent header (empty)
