@@ -1,10 +1,10 @@
 ---
 title: "Hack the Box (HTB) - Bashed"
-description: "?"
+description: "Insecure App & Cronjob Exploit"
 date: 2024-08-27 12:00:00 -100
 image: /assets/images/HTB - Bashed/Bashed Tumbnail.jpg
 categories: [CTF]
-tags: []    # TAG names should always be lowercase
+tags: [phpbash, cronjob, python]    # TAG names should always be lowercase
 ---
 
 ## Enumeration
@@ -135,7 +135,7 @@ GG, we've rooted Bashed!
 
 ## Additional Post Root Fun
 
-### Finding the crontab that allowed root exploit
+#### Finding the crontab that allowed root exploit
 
 ```bash
 crontab -l
@@ -143,7 +143,9 @@ crontab -l
 
 ![crontab root](/assets/images/HTB%20-%20Bashed/crontab%20root.png)
 
+This scheduled cronjob runs every minute of every hour, week, and month. It changes to /scripts and loops through all files ending in `.py`  and runs each. We could have created any python script in that directory earlier to gain root
 
+#### Checking /etc/shadow
 
 Checking the `/etc/shadow` file gives us the hashes for the users we've discovered in this box
 
@@ -160,27 +162,16 @@ It looks like these are using different hash algorithms
 
 I am going to skip attempting to crack this as I have limited resources on my VM
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Vulnerabilities & Mitigation's
 
-| **Vulnerability**                                | **Mitigation**                                                                                     |
-|--------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| **Drupalgeddon 2 (CVE-2018-7600)**               | Update Drupal to a patched version. For Drupal 7.x, upgrade to 7.58 or later. For Drupal 8.x, upgrade to 8.5.1 or later. Apply security patches provided by Drupal. |
-| **Snap Package Privilege Escalation**            | Ensure snapd is updated to the latest version. For CVE-2019-7304, ensure snapd version is 2.37.1 or higher. Regularly review and update package management tools. |
+| Vulnerability | Description | Mitigation |
+|---------------|-------------|------------|
+| PHPBash Vulnerability | PHPBash allows for remote code execution | Remove PHPBash or update to a patched version |
+| Cron Job Vulnerability | Cron job allows for execution of arbitrary Python scripts | Restrict cron job to only execute specific, trusted scripts |
+| Weak Password Hashing | MD5 and SHA-512 password hashes are used | Use a stronger password hashing algorithm like bcrypt or Argon2 |
+
+Would you like me to explain or break down this markdown table?
 
 ### Remediation References
 
-- [Drupal Security Advisories](https://www.drupal.org/security)
-- [Snapd Security Updates](https://snapcraft.io/docs/security-updates)
+- [NIST SP 800-63B, Section 5.1.1.2 - Memorized Secret ](https://pages.nist.gov/800-63-3/sp800-63b.html)
