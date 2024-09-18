@@ -1,10 +1,10 @@
 ---
-title: "Hack the Box (HTB) - Mailing"
+title: "Hack the Box (HTB) - Sightless"
 description: "?"
 date: 2027-09-07 12:00:00 -100
 image: /assets/images/HTB - Sightless/Sightless Thumbnail.jpg
 categories: [CTF]
-tags: [?]    # TAG names should always be lowercase
+tags: [test]    # TAG names should always be lowercase
 ---
 
 ## Enumeration
