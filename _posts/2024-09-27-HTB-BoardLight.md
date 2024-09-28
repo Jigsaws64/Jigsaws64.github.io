@@ -1,7 +1,7 @@
 --- 
 title: "Hack the Box (HTB) - BoardLight"
 description: "PHP Injection & SUID Exploit"
-date: 2024-07-30 12:00:00 -100
+date: 2024-09-27 12:00:00 -100
 image: /assets/images/HTB - BoardLight/BoardLight Offical.jpg
 categories: [CTF]
 tags: [suid,php,]    # TAG names should always be lowercase
@@ -243,3 +243,5 @@ GG, we've rooted BoardLight!
 - [OWASP Configuration Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Configuration_Guidelines.html)
 - [CVE-2022-37706 Details and Mitigation](https://nvd.nist.gov/vuln/detail/CVE-2022-37706)
 - [Linux Privilege Escalation Best Practices](https://www.linuxsecurity.com/features/linux-privilege-escalation-best-practices)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/LAfERlbYfRk" frameborder="0" allowfullscreen></iframe>
