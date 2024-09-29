@@ -4,7 +4,7 @@ description: "PHP Injection & SUID Exploit"
 date: 2024-09-27 12:00:00 -100
 image: /assets/images/HTB - BoardLight/BoardLight Offical.jpg
 categories: [CTF]
-tags: [suid,php,]    # TAG names should always be lowercase
+tags: [suid,php,boardlight,HTB]    # TAG names should always be lowercase
 ---
 
 ## Enumeration

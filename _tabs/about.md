@@ -4,12 +4,12 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-- 🕷 Currently working towards my OSCP
-- 🕸 In my leisure time, I enjoy working out, playing piano, reading, and old school gaming
+- 💻 Currently working towards my OSCP
+- 🏝️ In my leisure time, I enjoy working out, playing piano, reading, and old school gaming
 
-# Websites
+# YouTube
 
-- ⚡ My blog posts will be available on Medium soon
+- 🎥 Check out my [YouTube](https://www.youtube.com/@Jigsaww64) channel
 
 # Socials
 
