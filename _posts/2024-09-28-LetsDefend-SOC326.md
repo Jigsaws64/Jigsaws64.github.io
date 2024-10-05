@@ -39,115 +39,60 @@ Now, we can begin investigation. Since this is clearly a malicious domain intend
 
 Here, we can look for the malicious domain in question `letsdwfend.io`
 
-![Phishing request](/assets/images/LetsDefend%20-%20SOC326/Phishing%20email.png)
+![Alert](/assets/images/LetsDefend%20-%20SOC326/Alert.png)
 
-We successfully find one request. This request came in on `Sep, 28th, 2024, 8:00AM` which is 19h,55m after the initial notification for the malicious domains MX record change
+We see only one alert, and it comes from the notification in question
 
-![Actual Email](/assets/images/LetsDefend%20-%20SOC326/Actual%20Email.png)
+![Email Notification](/assets/images/LetsDefend%20-%20SOC326/Email%20Notification.png)
 
-The phishing attempt was sent to `mateo@letsdefend.io` with what appears to be a fictitious free voucher request with a hyperlink that takes the user to the malicious domain in question
+This email notification outlines the findings that we discussed earlier, providing a bit more detail such as the domain registrar & registrant
 
-Now that we know one of our users `mateo` might have potentially clicked on this malicious email, we need to investigate further. Let's head over to `Endpoint Security` and checkout Mateos device
+Let's search **letsdefwnd.io** against VirusTotals database
 
-![Contained](/assets/images/LetsDefend%20-%20SOC326/Contained.png)
+![Virtus Total](/assets/images/LetsDefend%20-%20SOC326/Virus%20Total.png)
 
-We should probably contain their device for now until we confirm if they clicked on any email
+As we can see, the domain is flagged as a phishing domain
 
-We'll delete this email
-
-![email deleted](/assets/images/LetsDefend%20-%20SOC326/Delete%20Email.png)
-
-Let's check Mateos browser history as we confirmed this phishing email would redirect the user to the malicious domain `letsdefwnd.io`
-
-![Mateo's History](/assets/images/LetsDefend%20-%20SOC326/History.png)
-
-Shame, it appears as though Mateo fell victim to the phishing attempt as incided by the browsing history. They visited the malicious domain on `2024-09-18 13:32:13 (1:32pm)`
-
-Let's take a look at the `Network Action` tab to see any connections that may have been made around that time
-
-![Network Action](/assets/images/LetsDefend%20-%20SOC326/Netowrk%20Action.png)
-
-Let's view any processes that have been ran after Mateo visited the malicious site
-
-We see three IP addresses:
-- 169.254.169.254 (Sep 18 2024 01:32:39)
-- 45.33.23.183 (Sep 18 2024 01:32:13)
-- 23.44.17. (Sep 18 2024 01:32:09)
-
-Let's investigate the IP address that happened after the time of the phishing email. We'll plug in the IP address `45.33.23.183` into [Virus Total](https://www.virustotal.com/gui/home/upload). We can skip and 169.254.169.254 as this is a APIPA  used for local network communication
-
-The IP ***45.33.23.183*** request was made at the exact same time as the phishing email, plugged into virus total yields the following results
-
-![45.33.23.183](/assets/images/LetsDefend%20-%20SOC326/45.33.23.183.png)
-
-As we can see, this IP has been flagged as malicious by six difference sources. It's important to note that this IP is associated with [Akamai Cloud](https://www.akamai.com/cloud-computing) which is a legitimate service. It is possible, however, for attackers to use cloud services for malicious purposes
-
-We should block the IP at the network firewall level
-
-The next logical step is to determine if there is malware or suspicious behavior on this system. Let's navigate to the `Possesses` tab
-
-![System Events](/assets/images/LetsDefend%20-%20SOC326/System%20Events.png)
-
-There are three process that were triggered on or after the pishing email interaction
-
-| Event Time             | Process ID | Process Name         | Parent Process | Command Line                                             | Relevance                                                   |
-|------------------------|------------|----------------------|----------------|-----------------------------------------------------------|-------------------------------------------------------------|
-| Sep 18, 2024, 01:32:13 PM | 1460       | chrome.exe           | explorer.exe   | "C:\Program Files\Google\Chrome\Application\chrome.exe"    | Likely when the phishing link was clicked.                   |
-| Sep 18, 2024, 01:32:50 PM | 100        | services.exe         | wininit.exe    | C:\Windows\system32\services.exe                          | Indicates a service was started or modified post-phishing.   |
-| Sep 18, 2024, 01:32:51 PM | 7228       | TrustedInstaller.exe | services.exe  | C:\Windows\servicing\TrustedInstaller.exe                 | Potential system change or installation post-phishing.       |
-
-Looking at these processes, it appears that Mateo clicked on the phishing link, which opened Chrome
-
-37 seconds following this, the `services.exe` process was triggered. This executable manages system services, suggesting this that a malicious script may have modified system services
-
-One second later, `TrustedInstaller.exe` was executed. This executable is associated with Windows updates and system modifications, suggesting malicious activity designed to modify system settings
-
-The next logical steps would be to perform a thorough scan on this endpoint to detect any malware. Since we don't have authorization to do so, we will write up our investigation and escalate this to the Incident Response team for further investigation
-
-![Close Alert](/assets/images/LetsDefend%20-%20SOC326/Create%20Case.png)
+Let's create a playbook for this alert as necessary
 
 ### Playbook Questions
 
 #### Are there any  or URLs in the email?
 
-- Yes, as indicated by the fake voucher link to the malicious domain
+- Technically, yes. However, it wasn't a phishing email as it was the notification email
 
 #### Analyze Url/Attachment
 
-- The IP address `45.33.23.183` associated with the malicious domain `letsdefwnd.io` was ran through VirusTotals database and marked as 
+- The domain `letsdefwnd.io` was searched via VirusTotal
 
 #### Check if Mail Delivered to User?
 
-- Delivered, as indicated by process modifications triggered shortly after user interacted with malicious domain
+- I answered no here, (this is incorrect) since no actual phishing email was sent
 
 #### Delete Email from recipient!
 
-- We already deleted this
-
-#### Check if someone opened the Malicious URL
-
-- User did open the email
+- Nothing to delete outside of an alert
 
 #### Containment
 
-- We contained the machine
+- Nothing to contain
 
 ### Artifacts
 
-![Artifacts](/assets/images/LetsDefend%20-%20SOC326/Artifacts.png)
-
-Here we added the malicious IP & Domain in question
+![Artifacts](/assets/images/LetsDefend%20-%20SOC326/Artifacts%20-%20Copy.png)
 
 ### Analyst Note
 
-![Analyst Note](/assets/images/LetsDefend%20-%20SOC326/Analyst%20Note.png)
+![Analyst Note](/assets/images/LetsDefend%20-%20SOC326/Notes.png)
 
-Now let's close the alert
+## Results
 
-![Close Alert](/assets/images/LetsDefend%20-%20SOC326/Close%20Alert.png)
+![Results](/assets/images/LetsDefend%20-%20SOC326/Results.png)
 
-It's a ***True Positive*** and here we can just copy and paste our analyst note 
+As we can see, I got the `check if mail delivered to user` question incorrect. I'm unsure if the notification email constituted as a yes to this question or not as I could not find an actual phishing email that was sent from the typosquatted email in question
 
-![End](/assets/images/LetsDefend%20-%20SOC326/End.png)
+***Feel free to send me a message on YouTube / Linkdin if I got something incorrect***
 
 GG, thats SOC326!
+
+<iframe width="560" height="315" src="https://www.youtube.com/watch?v=n3bTs4HTpak" frameborder="0" allowfullscreen></iframe>
