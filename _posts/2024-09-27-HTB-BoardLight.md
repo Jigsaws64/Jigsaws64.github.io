@@ -2,7 +2,7 @@
 title: "Hack the Box (HTB) - BoardLight"
 description: "PHP Injection & SUID Exploit"
 date: 2024-09-27 12:00:00 -100
-image: /assets/images/HTB - BoardLight/BoardLight Offical.jpg
+image: /assets/images/HTB - BoardLight/BoardLight.jpg
 categories: [CTF]
 tags: [suid,php,boardlight,HTB]    # TAG names should always be lowercase
 ---
