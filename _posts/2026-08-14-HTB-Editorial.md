@@ -1,7 +1,7 @@
 --- 
 title: "Hack the Box (HTB) - Editorial"
 description: "SSRF, Git, & Deprecated GitPython Library "
-date: 2024-08-13 12:00:00 -100
+date: 2026-08-13 12:00:00 -100
 image: /assets/images/HTB - Editorial/Editorial HTB.jpg
 categories: [CTF]
 tags: [ssrf, git, gitpython, outdated library ]    # TAG names should always be lowercase

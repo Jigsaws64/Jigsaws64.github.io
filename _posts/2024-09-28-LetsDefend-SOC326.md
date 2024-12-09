@@ -2,7 +2,7 @@
 title: "LetsDefend - SOC326"
 description: "Impersonating Domain MX Record Change Detected"
 date: 2024-09-28 12:00:00 -100
-image: /assets/images/LetsDefend - SOC326/Blog Thumbnail.jpg
+image: /assets/images/LetsDefend - SOC326/Let's Defend SOC326.jpg
 categories: [Incident Response]
 tags: [mx record, soc analyst, incident response]    # TAG names should always be lowercase
 ---

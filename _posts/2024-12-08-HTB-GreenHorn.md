@@ -1,8 +1,8 @@
 --- 
 title: "Hack the Box (HTB) - GreenHorn"
 description: "Hardcoded Creds & Stenography"
-date: 2024-07-27 12:00:00 -100
-image: /assets/images/HTB - Greenhorn/Green Horn Thumbnail.png
+date: 2024-12-08 12:00:00 -100
+image: /assets/images/HTB - Greenhorn/Greenhorn TN.jpg
 categories: [CTF]
 tags: [gitea, cms, hashcat, steganography]    # TAG names should always be lowercase
 ---
