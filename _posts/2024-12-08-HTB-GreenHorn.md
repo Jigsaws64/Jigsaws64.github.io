@@ -1,11 +1,13 @@
---- 
-title: "Hack the Box (HTB) - GreenHorn"
-description: "Hardcoded Creds & Stenography"
+---
+title: "Hack the Box (HTB) - GreenHorn Walkthrough"
+description: "Detailed step-by-step walkthrough for Hack The Box's GreenHorn machine, covering LFI, Pluck CMS exploitation, hardcoded credentials, and privilege escalation to root."
 date: 2024-12-08 12:00:00 -100
 image: /assets/images/HTB - Greenhorn/Greenhorn TN.jpg
 categories: [CTF]
-tags: [gitea, cms, hashcat, steganography]    # TAG names should always be lowercase
+tags: [htb, greenhorn, pluck cms, gitea, hashcat, steganography, privilege escalation, pentest]
+keywords: "HTB GreenHorn walkthrough, LFI, Pluck CMS exploit, Hack The Box GreenHorn, privilege escalation"
 ---
+
 
 ## Enumeration
 
